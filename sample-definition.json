@@ -1,0 +1,34 @@
+{
+  "appId": "201_01",
+  "databases": [
+    {
+      "name": "dbB",
+      "connectionString": "...",
+      "type": "sqlserver"
+    }
+  ],
+  "queue": {
+    "connectionString": ".....",
+    "topic": "dbB"
+  },
+  "inputs": [
+    {
+      "from": {
+        "table":"101_01.dbA.schema.customers",
+        "columns":["cus_id"]
+      },
+      "to": {
+        "table": "dbB.schema.cards",
+        "columns": ["cus_id"]
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "tabular": "dbB.schema.cards",
+      "columns": [
+        "card_no"
+      ]
+    }
+  ]
+}
