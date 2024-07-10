@@ -1,0 +1,7 @@
+insert into statements (statement_id,ccno,period) values ('abh320bkjh45','111111111','0624');
+insert into statements (statement_id,ccno,period) values ('2130495ryuhj','111111112','0624');
+insert into statements (statement_id,ccno,period) values ('193uj54rnqa7','444444441','0624');
+insert into statements (statement_id,ccno,period) values ('n3412oiu2n59','555555551','0624');
+insert into statements (statement_id,ccno,period) values ('09ih1234erae','555555552','0624');
+insert into statements (statement_id,ccno,period) values ('n30asdnr32nm','555555553','0624');
+insert into statements (statement_id,ccno,period) values ('0913h42nb5n1','333333331','0624');

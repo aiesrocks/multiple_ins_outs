@@ -1,0 +1,4 @@
+DELETE FROM statements WHERE ccno = '444444441';
+DELETE FROM statements WHERE ccno = '333333331';
+DELETE FROM statements WHERE ccno = '111111112';
+DELETE FROM statements WHERE ccno = '111111111';

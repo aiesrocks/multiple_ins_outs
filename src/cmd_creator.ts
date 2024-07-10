@@ -1,7 +1,8 @@
-const fs = require('fs');
+// const fs = require('fs');
+import * as fs from 'fs';
 import csv from 'csv-parser';
 const load_config = require('./config_loader');
-const sqlServerDelete = require('./sql_server_delete');
+const { sqlServerDelete, sqlServerRead } = require('./sql_server');
 
 // Get JSON config file paths from command-line arguments
 const definitionPath = process.argv[2];
@@ -9,89 +10,60 @@ const definition = JSON.parse(fs.readFileSync(definitionPath, 'utf8'));
 
 for (let input of definition.inputs) {
 
-  console.log("## Load config for: " + input + " ##");
+  console.log("## Load config from: " + definitionPath);
 
-  var { fromFileName, databaseTo } = load_config(input, definition);
-
-
-  // function load_config() {
-  //   // Read JSON config files
-  //   // const config1 = JSON.parse(fs.readFileSync(mainConfigPath, 'utf8'));
-  //   const definition = JSON.parse(fs.readFileSync(definitionPath, 'utf8'));
-
-  //   // Input
-  //   console.log("== Extract input file (.from) information from \"" + definition.inputs[0].from + "\" ==");
-  //   var from0 = definition.inputs[0].from;
-  //   var parts = from0.split('.');
-
-  //   var fromAppId = parts[0];
-  //   var fromDbId = parts[1];
-  //   var fromSchemaId = parts[2];
-  //   var fromTableName = parts[3];
-  //   var fromColumnName = parts.pop();
-  //   fromFileName = "csv/" + fromAppId + "/" + parts.join('.');
-
-  //   console.log(fromAppId);
-  //   console.log(fromDbId);
-  //   console.log(fromSchemaId);
-  //   console.log(fromTableName);
-  //   console.log(fromColumnName);
-  //   console.log(fromFileName);
-
-  //   console.log("== Extract input target (.to) information from \"" + definition.inputs[0].to + "\" ==");
-  //   var to0 = definition.inputs[0].to;
-  //   parts = to0.split('.');
-
-
-  //   var toDbId = parts[0];
-  //   var toSchemaId = parts[1];
-  //   var toTableName = parts[2];
-  //   var toTableFull = toDbId + "." + toSchemaId + "." + toTableName;
-  //   var toColumnName = parts[3]
-
-
-  //   console.log(toDbId);
-  //   console.log(toSchemaId);
-  //   console.log(toTableName);
-  //   console.log(toColumnName);
-
-  //   // Output
-  //   console.log("== Extract output information from \"" + definition.outputs + "\" ==");
-  //   var output0 = definition.outputs;
-
-  //   var outputTo = output0.find((item: any) => item.tabular === toTableFull);
-  //   var outputToColumns = outputTo.columns;
-
-  //   console.log(outputTo);
-  //   console.log(outputToColumns);
-
-  //   // Database
-  //   console.log("== Extract database information from \"" + definition.databases + "\" ==");
-  //   var databases0 = definition.databases;
-
-  //   var databaseTo = databases0.find((item: any) => item.name === toDbId);
-  //   databaseToType = databaseTo.type;
-
-  //   console.log(databaseTo);
-  //   console.log(databaseToType);
-  // }
-  // 
-  // 
-  // load_config();
-
+  var { databaseTo, outputTo } = load_config(input, definition);
+  // console.log("===============");
+  // console.log(outputTo);
+  // console.log(databaseTo.connectionString);
+  // sqlServerRead(databaseTo.connectionString);
 
   // Read and parse CSV data file
-  // var fromFileName="csv/" + input.from.table;
   const data = [];
-  console.log("\nOpening file: " + fromFileName);
-  fs.createReadStream(fromFileName)
+  console.log("Deleting files: " + outputTo.filePath);
+  console.log("Deleting files: " + databaseTo.commandFilePath);
+  fs.unlink(outputTo.filePath, (err) => { });
+  fs.unlink(databaseTo.commandFilePath, (err) => { });
+  console.log("Opening file: " + databaseTo.fromCsvPath);
+
+  // Prepare header for output file
+  let headerString = '';
+  for (let j = 0; j < outputTo.columns.length; j++) {
+    headerString += outputTo.columns[j];
+    if (j < outputTo.columns.length - 1) {
+      headerString += ',';
+    }
+  }
+  console.log('Start header of file:', outputTo.filePath, headerString)
+  fs.appendFile(outputTo.filePath, headerString + '\n', (err) => {
+    if (err) {
+      console.error('Error creating file:', err);
+    }
+  });
+
+  fs.createReadStream(databaseTo.fromCsvPath)
     .pipe(csv())
     .on('data', (row: any) => { // Explicitly specify the type of 'row' as 'any'
 
       let outputString = '';
+      let commandString = '';
+      // let headerString = '';
 
+      console.log(row);
       if (databaseTo.type === 'sqlserver') {
-        outputString = sqlServerDelete(databaseTo, row);
+        // console.log(outputTo);
+        // Creating subsetting commands
+        commandString = sqlServerDelete(databaseTo, input, row);
+        console.log("Appending to file: " + databaseTo.commandFilePath);
+        fs.appendFile(databaseTo.commandFilePath, commandString + '\n', (err) => {
+          if (err) {
+            console.error('Error appending to file:', err);
+          }
+        });
+
+        // Create CSV for downstream applications
+        outputString = sqlServerRead(databaseTo, outputTo, input, row);
+
       } else if (databaseTo.type === 'oracle') {
         outputString = 'Oracle is not supported yet';
       } else {
@@ -100,11 +72,14 @@ for (let input of definition.inputs) {
       }
 
       data.push(row);
-      console.log("\n"+outputString);
-      console.log(row);
+      // console.log(outputString);
+      // console.log(commandString);
+      // console.log(row);
+
     })
-    .on('end', () => {
-      console.log('CSV file successfully processed');
-      // Here you can use your config and data
-    })
+
+  // .on('end', () => {
+  //   console.log('CSV file successfully processed');
+  //   // Here you can use your config and data
+  // })
 }

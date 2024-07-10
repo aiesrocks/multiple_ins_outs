@@ -1,0 +1,34 @@
+{
+  "appId": "301_03",
+  "databases": [
+    {
+      "name": "dbC",
+      "connectionString": "sqlite:sqlite/301_03/dbC.db",
+      "type": "sqlserver",
+      "queue": {
+        "connectionString": ".....",
+        "topic": "dbC"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "from": {
+        "table":"201_02.dbB.schema.cards",
+        "columns":["card_no"]
+      },
+      "to": {
+        "table": "dbC.schema.statements",
+        "columns": ["ccno"]
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "table": "dbC.schema.statements",
+      "columns": [
+        "ccno","period"
+      ]
+    }
+  ]
+}

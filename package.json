@@ -17,6 +17,8 @@
   "dependencies": {
     "csv-parser": "^3.0.0",
     "mysql": "^2.18.1",
+    "sequelize": "^6.37.3",
+    "sqlite3": "^5.1.7",
     "typeorm": "^0.3.20"
   }
 }

@@ -4,9 +4,12 @@ function load_config(input: any, definition: any) {
     // Read JSON config files
     // const config1 = JSON.parse(fs.readFileSync(mainConfigPath, 'utf8'));
     // const definition = JSON.parse(fs.readFileSync(definitionPath, 'utf8'));
+    
+    console.info = () => {};
 
     // Input
-    console.log("\n== Extract input file (.from) information from \"" + input.from + "\" ==");
+    // console.log (definition);
+    console.info("\n== Extract input file (.from) information");
     var from0 = input.from.table;
     var parts = from0.split('.');
 
@@ -16,55 +19,63 @@ function load_config(input: any, definition: any) {
     var fromTableName = parts[3];
     // parts.pop();
     // var fromColumn = input.from.columns;
-    var fromFileName = "csv/" + fromAppId + "/" + parts.join('.');
+    var fromCsvPath = "csv/" + fromAppId + "/" + parts.join('.');
 
-    console.log(fromAppId);
-    console.log(fromDbId);
-    console.log(fromSchemaId);
-    console.log(fromTableName);
-    // console.log(fromColumnName);
-    console.log(fromFileName);
+    console.info(fromAppId);
+    console.info(fromDbId);
+    console.info(fromSchemaId);
+    console.info(fromTableName);
+    console.info(fromCsvPath);
 
-    console.log("\n== Extract input target (.to) information from \"" + input.to + "\" ==");
+    console.info("\n== Extract input target (.to) information");
     var to0 = input.to.table;
     parts = to0.split('.');
 
-
     var toDbId = parts[0];
-    // var toSchemaId = parts[1];
+    var toSchemaId = parts[1];
     var toTableName = parts[2];
     // var toTableFull = toDbId + "." + toSchemaId + "." + toTableName;
     // var toColumnName = parts[3]
+    var commandFilePath = "command/" + definition.appId + "/" + definition.appId + "." + parts.join('.');
 
-
-    console.log(toDbId);
-    // console.log(toSchemaId);
-    // console.log(toTableName);
-    // console.log(toColumnName);
+    console.info(toDbId);
+    // console.info(toSchemaId);
+    // console.info(toTableName);
+    // console.info(toColumnName);
+    console.info(commandFilePath);
 
     // Output
-    console.log("\n== Extract output information from \"" + definition.outputs + "\" ==");
+    console.info("\n== Extract output information ("+ input.to.table +")");
     var output0 = definition.outputs;
 
-    var outputTo = output0.find((item: any) => item.tabular === input.to.table);
-    var outputToColumns = outputTo.columns;
+    var outputTo = output0.find((item: any) => item.table === input.to.table);
+    outputTo.appId = definition.appId;
+    outputTo.filePath = "csv/" + definition.appId + "/" + definition.appId + "." + toDbId + "." + toSchemaId + "." + toTableName;
+    // console.info(outputTo);
+    // var outputToColumns = outputTo.columns;
+    // databaseTo.outputColumns = outputTo.columns;
 
-    console.log(outputTo);
-    console.log(outputToColumns);
+    console.info(outputTo);
+    // console.info(outputToColumns);
 
     // Database
-    console.log("\n== Extract database information from \"" + definition.databases + "\" ==");
+    console.info("\n== Extract database information");
     var databases0 = definition.databases;
 
     var databaseTo = databases0.find((item: any) => item.name === toDbId);
     databaseTo.table = toTableName;
+    databaseTo.schema = toSchemaId;
+    databaseTo.fromCsvPath = fromCsvPath;
+    databaseTo.commandFilePath = commandFilePath;
     // databaseTo.column = toColumnName;
     // var databaseToType = databaseTo.type;
 
-    console.log(databaseTo);
-    // console.log(databaseToType);
-    
-    return { fromFileName, databaseTo };
+    console.info(databaseTo);
+    // console.info(databaseToType);
+    // databaseTo.outputColumns = outputTo.columns;
+
+    // console.info(outputTo);
+    return { databaseTo, outputTo};
 }
 
 module.exports = load_config;
