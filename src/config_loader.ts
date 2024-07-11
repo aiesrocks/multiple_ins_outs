@@ -4,8 +4,8 @@ function load_config(input: any, definition: any) {
     // Read JSON config files
     // const config1 = JSON.parse(fs.readFileSync(mainConfigPath, 'utf8'));
     // const definition = JSON.parse(fs.readFileSync(definitionPath, 'utf8'));
-    
-    console.info = () => {};
+
+    console.info = () => { };
 
     // Input
     // console.log (definition);
@@ -45,18 +45,22 @@ function load_config(input: any, definition: any) {
     console.info(commandFilePath);
 
     // Output
-    console.info("\n== Extract output information ("+ input.to.table +")");
+    console.info("\n== Extract output information (" + input.to.table + ")");
     var output0 = definition.outputs;
-
     var outputTo = output0.find((item: any) => item.table === input.to.table);
-    outputTo.appId = definition.appId;
-    outputTo.filePath = "csv/" + definition.appId + "/" + definition.appId + "." + toDbId + "." + toSchemaId + "." + toTableName;
-    // console.info(outputTo);
-    // var outputToColumns = outputTo.columns;
-    // databaseTo.outputColumns = outputTo.columns;
 
-    console.info(outputTo);
-    // console.info(outputToColumns);
+    // console.log(outputTo);
+    // console.log(input.to.table);
+    if (outputTo !== undefined) {
+        outputTo.appId = definition.appId;
+        outputTo.filePath = "csv/" + definition.appId + "/" + definition.appId + "." + toDbId + "." + toSchemaId + "." + toTableName;
+        // console.info(outputTo);
+        // var outputToColumns = outputTo.columns;
+        // databaseTo.outputColumns = outputTo.columns;
+
+        console.info(outputTo);
+        // console.info(outputToColumns);
+    }/*  */
 
     // Database
     console.info("\n== Extract database information");
@@ -75,7 +79,7 @@ function load_config(input: any, definition: any) {
     // databaseTo.outputColumns = outputTo.columns;
 
     // console.info(outputTo);
-    return { databaseTo, outputTo};
+    return { databaseTo, outputTo };
 }
 
 module.exports = load_config;

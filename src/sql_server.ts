@@ -57,8 +57,8 @@ async function sqlServerRead(database: any, output: any, input: any, row: any) {
 }
 
 function sqlServerDelete(databaseTo: any, input: any, row: any) {
-  console.log(row);
-  console.log(input.to.columns);
+  // console.log(row);
+  // console.log(input.to.columns);
   var outputString = 'DELETE FROM ' + databaseTo.table + where_clause(input.to.columns, input.from.columns, row);
   outputString += ';';
 

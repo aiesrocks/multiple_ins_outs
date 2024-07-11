@@ -21,14 +21,24 @@
         "table": "dbB.schema.cards",
         "columns": ["cus_id"]
       }
+    },
+    {
+      "from": {
+        "table":"101_01.dbA.schema.customers",
+        "columns":["cus_id"]
+      },
+      "to": {
+        "table": "dbB.schema.billing_address",
+        "columns": ["cus_id"]
+      }
     }
   ],
   "outputs": [
     {
       "table": "dbB.schema.cards",
       "columns": [
-        "cus_id","card_no","expiry_date"
-      ]
+        "card_no"
+        ]
     }
   ]
 }
