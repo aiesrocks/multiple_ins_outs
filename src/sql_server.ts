@@ -16,6 +16,7 @@ function where_clause(columnsTo: any, columnsFrom: any, row: any) {
 }
 
 async function sqlServerRead(database: any, output: any, input: any, row: any) {
+  // console.log(row);
   try {
     var queryString = 'SELECT '
     for (let i = 0; i < output.columns.length; i++) {
@@ -28,15 +29,17 @@ async function sqlServerRead(database: any, output: any, input: any, row: any) {
     queryString += ';';
 
     // console.log(queryString);
+    // console.log(database.connectionString);
     const sequelize = new Sequelize(database.connectionString, {logging: false}); // Example for an in-memory database
     // const sequelize = new Sequelize('sqlite:sqlite/201_01/dbB.db'); // Example for an in-memory database
     const result = await sequelize.query(queryString, {
       type: Sequelize.QueryTypes.SELECT
     });
 
-    var outColumns = output.columns
+    // console.log(result);
+    let outColumns = output.columns
     for (let i = 0; i < result.length; i++) {
-    var outputString = '';            
+      let outputString = '';            
       for (let j = 0; j < outColumns.length; j++) {
         outputString += result[i][outColumns[j]];        
         if (j < outColumns.length - 1) {
@@ -59,7 +62,7 @@ async function sqlServerRead(database: any, output: any, input: any, row: any) {
 function sqlServerDelete(databaseTo: any, input: any, row: any) {
   // console.log(row);
   // console.log(input.to.columns);
-  var outputString = 'DELETE FROM ' + databaseTo.table + where_clause(input.to.columns, input.from.columns, row);
+  let outputString = 'DELETE FROM ' + databaseTo.table + where_clause(input.to.columns, input.from.columns, row);
   outputString += ';';
 
   return outputString;

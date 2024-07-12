@@ -10,16 +10,16 @@ function load_config(input: any, definition: any) {
     // Input
     // console.log (definition);
     console.info("\n== Extract input file (.from) information");
-    var from0 = input.from.table;
-    var parts = from0.split('.');
+    let from0 = input.from.table;
+    let parts = from0.split('.');
 
-    var fromAppId = parts[0];
-    var fromDbId = parts[1];
-    var fromSchemaId = parts[2];
-    var fromTableName = parts[3];
+    let fromAppId = parts[0];
+    let fromDbId = parts[1];
+    let fromSchemaId = parts[2];
+    let fromTableName = parts[3];
     // parts.pop();
     // var fromColumn = input.from.columns;
-    var fromCsvPath = "csv/" + fromAppId + "/" + parts.join('.');
+    let fromCsvPath = "csv/" + fromAppId + "/" + parts.join('.');
 
     console.info(fromAppId);
     console.info(fromDbId);
@@ -28,15 +28,15 @@ function load_config(input: any, definition: any) {
     console.info(fromCsvPath);
 
     console.info("\n== Extract input target (.to) information");
-    var to0 = input.to.table;
+    let to0 = input.to.table;
     parts = to0.split('.');
 
-    var toDbId = parts[0];
-    var toSchemaId = parts[1];
-    var toTableName = parts[2];
+    let toDbId = parts[0];
+    let toSchemaId = parts[1];
+    let toTableName = parts[2];
     // var toTableFull = toDbId + "." + toSchemaId + "." + toTableName;
     // var toColumnName = parts[3]
-    var commandFilePath = "command/" + definition.appId + "/" + definition.appId + "." + parts.join('.');
+    let commandFilePath = "command/" + definition.appId + "/" + definition.appId + "." + parts.join('.');
 
     console.info(toDbId);
     // console.info(toSchemaId);
@@ -46,8 +46,8 @@ function load_config(input: any, definition: any) {
 
     // Output
     console.info("\n== Extract output information (" + input.to.table + ")");
-    var output0 = definition.outputs;
-    var outputTo = output0.find((item: any) => item.table === input.to.table);
+    let output0 = definition.outputs;
+    let outputTo = output0.find((item: any) => item.table === input.to.table);
 
     // console.log(outputTo);
     // console.log(input.to.table);
@@ -64,9 +64,9 @@ function load_config(input: any, definition: any) {
 
     // Database
     console.info("\n== Extract database information");
-    var databases0 = definition.databases;
+    let databases0 = definition.databases;
 
-    var databaseTo = databases0.find((item: any) => item.name === toDbId);
+    let databaseTo = databases0.find((item: any) => item.name === toDbId);
     databaseTo.table = toTableName;
     databaseTo.schema = toSchemaId;
     databaseTo.fromCsvPath = fromCsvPath;
