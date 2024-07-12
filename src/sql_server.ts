@@ -30,7 +30,7 @@ async function sqlServerRead(database: any, output: any, input: any, row: any) {
 
     // console.log(queryString);
     // console.log(database.connectionString);
-    const sequelize = new Sequelize(database.connectionString, {logging: false}); // Example for an in-memory database
+    const sequelize = new Sequelize(database.connectionString, { logging: false }); // Example for an in-memory database
     // const sequelize = new Sequelize('sqlite:sqlite/201_01/dbB.db'); // Example for an in-memory database
     const result = await sequelize.query(queryString, {
       type: Sequelize.QueryTypes.SELECT
@@ -39,20 +39,20 @@ async function sqlServerRead(database: any, output: any, input: any, row: any) {
     // console.log(result);
     let outColumns = output.columns
     for (let i = 0; i < result.length; i++) {
-      let outputString = '';            
+      let outputString = '';
       for (let j = 0; j < outColumns.length; j++) {
-        outputString += result[i][outColumns[j]];        
+        outputString += result[i][outColumns[j]];
         if (j < outColumns.length - 1) {
           outputString += ',';
         }
       }
       // console.log(outputString);
-      console.log('Appended to file:', output.filePath, outputString)
+      // console.log('Appended to file:', output.filePath, outputString)
       fs.appendFile(output.filePath, outputString + '\n', (err) => {
         if (err) {
           console.error('Error appending to file:', err);
-        }        
-      });      
+        }
+      });
     }
   } catch (error) {
     console.error('Error executing raw query:', error);
@@ -68,4 +68,54 @@ function sqlServerDelete(databaseTo: any, input: any, row: any) {
   return outputString;
 }
 
-module.exports = { sqlServerDelete, sqlServerRead };
+async function sqlServerListIndexes(database: any, tableName: string, columns: string[]) {
+  try {
+    console.log('Listing indexes for table:', tableName);
+    console.log('Columns:', columns);
+
+    // Query sqlite_master to get all index names for the specified table
+    const sequelize = new Sequelize(database.connectionString, { logging: false });
+    // const indexes = await sequelize.query(
+    //   "SELECT name, sql FROM sqlite_master WHERE type = 'index' AND tbl_name = :tableName AND sql NOT NULL",
+    //   {
+    //     replacements: { tableName },
+    //     type: sequelize.QueryTypes.SELECT,
+    //   }
+    // );
+
+    const indexes = await sequelize.query(
+      "SELECT name, sql FROM sqlite_master WHERE type = 'index' AND tbl_name = 'cards' AND sql NOT NULL", { type: sequelize.QueryTypes.SELECT, });
+
+    // Filter out indexes that are automatically created for primary keys
+    // This is a basic filter assuming primary key indexes do not contain specific patterns in their SQL definition
+    // Adjust the filtering logic based on your database's naming conventions or requirements
+    const nonPrimaryKeyIndexes = indexes.filter((index: any) => !index.sql.includes('PRIMARY KEY'));
+
+    for (let index of nonPrimaryKeyIndexes) {
+      console.log('Non-primary key indexes:', index.sql);
+      // console.log('Appended to file:', output.filePath, outputString)
+      fs.appendFile(database.commandFilePath + "-post", index.sql + '\n', (err) => {
+        if (err) {
+          console.error('Error appending to file:', err);
+
+        }
+        // console.log('Non-primary key indexes:', nonPrimaryKeyIndexes[0].sql);
+        // return nonPrimaryKeyIndexes;
+      })
+
+      fs.appendFile(database.commandFilePath + "-pre", 'DROP INDEX ' + index.name + ';\n', (err) => {
+        if (err) {
+          console.error('Error appending to file:', err);
+
+        }
+        // console.log('Non-primary key indexes:', nonPrimaryKeyIndexes[0].sql);
+        // return nonPrimaryKeyIndexes;
+      })
+    }
+  } catch (error) {
+    console.error('Error listing table indexes:', error);
+  }
+}
+
+
+module.exports = { sqlServerDelete, sqlServerRead, sqlServerListIndexes };

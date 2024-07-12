@@ -1,7 +1,7 @@
 // TODO
 // * DONE: add an additional input mapping to another table (not in-app cascade which is for DBMS)
 // * Add an additional input mapping to the same table (may do in 301_03 to make it depend on both 101_01 and 201_02)
-// * Add DDL commands
+// * DONE: Add DDL commands (both pre- and post-)
 // * Add definition for initial app (criteria not from a file) 
 //   -- workaround by manually create a CSV file
 // * Add cyclic dependency scenario (e.g. A -> B -> A)
@@ -15,12 +15,13 @@ import * as fs from 'fs';
 import csv from 'csv-parser';
 import * as readline from 'readline';
 const load_config = require('./config_loader');
-const { sqlServerDelete, sqlServerRead } = require('./sql_server');
+const { sqlServerDelete, sqlServerRead, sqlServerListIndexes } = require('./sql_server');
 
 // Get JSON config file paths from command-line arguments
 const definitionPath = process.argv[2];
 const definition = JSON.parse(fs.readFileSync(definitionPath, 'utf8'));
-var needOutput: boolean = true;
+// var needOutput: boolean = true;
+var resetFiles: boolean = true;
 
 processInputs(definition);
 
@@ -47,40 +48,44 @@ async function processInput(input: any): Promise<void> {
     // console.log(outputTo);
     // console.log(databaseTo.connectionString);
     // sqlServerRead(databaseTo.connectionString);
-    if (needOutput) {
-      console.log("Deleting files: " + outputTo.filePath);
+
+    if (resetFiles) {
+      let files: string[] = [];
       try {
-        fs.unlinkSync(outputTo.filePath);
-        // console.log("Successfully deleted file: " + outputTo.filePath);
+        files = [outputTo.filePath, databaseTo.commandFilePath, databaseTo.commandFilePath + "-pre", databaseTo.commandFilePath + "-post"];
       } catch (err) {
-        // console.error("Error deleting file: " + outputTo.filePath, err);
+        files = [databaseTo.commandFilePath, databaseTo.commandFilePath + "-pre", databaseTo.commandFilePath + "-post"];
       }
-
-    }
-    console.log("Deleting files: " + databaseTo.commandFilePath);
-    try {
-      fs.unlinkSync(databaseTo.commandFilePath);
-      console.log("Successfully deleted file: " + databaseTo.commandFilePath);
-    } catch (err) {
-      console.error("Error deleting file: " + databaseTo.commandFilePath, err);
-    }
-
-    // Prepare header for output file
-    if (needOutput) {
-      let headerString = '';
-      for (let j = 0; j < outputTo.columns.length; j++) {
-        headerString += outputTo.columns[j];
-        if (j < outputTo.columns.length - 1) {
-          headerString += ',';
+      for (let file of files) {
+        console.log("Deleting files: " + file);
+        try {
+          fs.unlinkSync(file);
+          // console.log("Successfully deleted file: " + outputTo.filePath);
+        } catch (err) {
+          // console.error("Error deleting file: " + outputTo.filePath, err);
         }
       }
-      console.log('Start header of file:', outputTo.filePath, headerString)
-      fs.appendFile(outputTo.filePath, headerString + '\n', (err) => {
-        if (err) {
-          console.error('Error creating file:', err);
+
+      // Prepare header for output file
+      if (needOutput) {
+        let headerString = '';
+        for (let j = 0; j < outputTo.columns.length; j++) {
+          headerString += outputTo.columns[j];
+          if (j < outputTo.columns.length - 1) {
+            headerString += ',';
+          }
         }
-      });
+        console.log('Start header of file:', outputTo.filePath, headerString)
+        fs.appendFile(outputTo.filePath, headerString + '\n', (err) => {
+          if (err) {
+            console.error('Error creating file:', err);
+          }
+        });
+      }
     }
+    // Creating DDL commands
+    sqlServerListIndexes(databaseTo, input.to.table, input.to.columns);
+
 
     // Read and parse CSV data file
     // const data = [];
@@ -95,9 +100,10 @@ async function processInput(input: any): Promise<void> {
       // console.log(row);
       if (databaseTo.type === 'sqlserver') {
         // console.log(outputTo);
+
         // Creating subsetting commands
         commandString = sqlServerDelete(databaseTo, input, row);
-        console.log("Appending to file: " + databaseTo.commandFilePath);
+        // console.log("Appending to file: " + databaseTo.commandFilePath);
         fs.appendFile(databaseTo.commandFilePath, commandString + '\n', (err) => {
           if (err) {
             console.error('Error appending to file:', err);

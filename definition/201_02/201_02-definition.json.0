@@ -1,0 +1,44 @@
+{
+  "appId": "201_02",
+  "databases": [
+    {
+      "name": "dbB",
+      "connectionString": "sqlite:sqlite/201_02/dbB.db",
+      "type": "sqlserver",
+      "queue": {
+        "connectionString": ".....",
+        "topic": "dbB"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "from": {
+        "table":"101_01.dbA.schema.customers",
+        "columns":["cus_id"]
+      },
+      "to": {
+        "table": "dbB.schema.cards",
+        "columns": ["cus_id"]
+      }
+    },
+    {
+      "from": {
+        "table":"101_01.dbA.schema.customers",
+        "columns":["cus_id"]
+      },
+      "to": {
+        "table": "dbB.schema.billing_address",
+        "columns": ["cus_id"]
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "table": "dbB.schema.cards",
+      "columns": [
+        "card_no"
+        ]
+    }
+  ]
+}

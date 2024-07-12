@@ -1,4 +1,4 @@
 DELETE FROM cards WHERE cus_id = '111111';
 DELETE FROM cards WHERE cus_id = '111112';
-DELETE FROM cards WHERE cus_id = '111114';
 DELETE FROM cards WHERE cus_id = '111113';
+DELETE FROM cards WHERE cus_id = '111114';
