@@ -35,7 +35,7 @@ async function processInputs(definition: any) {
 
 
 async function processInput(input: any): Promise<void> {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     console.log("\n\n## Load config from: " + definitionPath);
     console.log(input);
 
@@ -43,6 +43,10 @@ async function processInput(input: any): Promise<void> {
     const { databaseTo, outputTo } = load_config(input, definition);
     if (outputTo === undefined) {
       needOutput = false;
+    }
+
+    if (outputTo !== undefined && outputTo.resetFile !== undefined) {
+      resetFiles = outputTo.resetFile;
     }
     // console.log("===============");
     // console.log(outputTo);
@@ -84,7 +88,7 @@ async function processInput(input: any): Promise<void> {
       }
     }
     // Creating DDL commands
-    sqlServerListIndexes(databaseTo, input.to.table, input.to.columns);
+    await sqlServerListIndexes(databaseTo, input.to.table, input.to.columns);
 
 
     // Read and parse CSV data file
@@ -103,7 +107,7 @@ async function processInput(input: any): Promise<void> {
 
         // Creating subsetting commands
         commandString = sqlServerDelete(databaseTo, input, row);
-        // console.log("Appending to file: " + databaseTo.commandFilePath);
+        console.log("Appending to file: " + databaseTo.commandFilePath);
         fs.appendFile(databaseTo.commandFilePath, commandString + '\n', (err) => {
           if (err) {
             console.error('Error appending to file:', err);

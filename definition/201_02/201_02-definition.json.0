@@ -14,22 +14,30 @@
   "inputs": [
     {
       "from": {
-        "table":"101_01.dbA.schema.customers",
-        "columns":["cus_id"]
+        "table": "101_01.dbA.schema.customers",
+        "columns": [
+          "cus_id"
+        ]
       },
       "to": {
         "table": "dbB.schema.cards",
-        "columns": ["cus_id"]
+        "columns": [
+          "cus_id"
+        ]
       }
     },
     {
       "from": {
-        "table":"101_01.dbA.schema.customers",
-        "columns":["cus_id"]
+        "table": "101_01.dbA.schema.customers",
+        "columns": [
+          "cus_id"
+        ]
       },
       "to": {
         "table": "dbB.schema.billing_address",
-        "columns": ["cus_id"]
+        "columns": [
+          "cus_id"
+        ]
       }
     }
   ],
@@ -38,7 +46,8 @@
       "table": "dbB.schema.cards",
       "columns": [
         "card_no"
-        ]
+      ],
+      "resetFile": true
     }
   ]
 }

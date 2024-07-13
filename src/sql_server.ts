@@ -70,8 +70,8 @@ function sqlServerDelete(databaseTo: any, input: any, row: any) {
 
 async function sqlServerListIndexes(database: any, tableName: string, columns: string[]) {
   try {
-    console.log('Listing indexes for table:', tableName);
-    console.log('Columns:', columns);
+    console.log('Listing indexes for table:', tableName, "and columns:", columns);
+    // console.log('Columns:', columns);
 
     // Query sqlite_master to get all index names for the specified table
     const sequelize = new Sequelize(database.connectionString, { logging: false });
@@ -91,10 +91,11 @@ async function sqlServerListIndexes(database: any, tableName: string, columns: s
     // Adjust the filtering logic based on your database's naming conventions or requirements
     const nonPrimaryKeyIndexes = indexes.filter((index: any) => !index.sql.includes('PRIMARY KEY'));
 
+    // console.log(nonPrimaryKeyIndexes);
     for (let index of nonPrimaryKeyIndexes) {
-      console.log('Non-primary key indexes:', index.sql);
-      // console.log('Appended to file:', output.filePath, outputString)
-      fs.appendFile(database.commandFilePath + "-post", index.sql + '\n', (err) => {
+      // console.log('Non-primary key indexes:"', index.sql, '"');
+      console.log('Appended to file:', database.commandFilePath + "-post")
+      fs.appendFile(database.commandFilePath + "-post", index.sql.replace(/\r\n$/, ';\n'), (err) => {
         if (err) {
           console.error('Error appending to file:', err);
 
@@ -103,6 +104,7 @@ async function sqlServerListIndexes(database: any, tableName: string, columns: s
         // return nonPrimaryKeyIndexes;
       })
 
+      console.log('Appended to file:', database.commandFilePath + "-pre")
       fs.appendFile(database.commandFilePath + "-pre", 'DROP INDEX ' + index.name + ';\n', (err) => {
         if (err) {
           console.error('Error appending to file:', err);
