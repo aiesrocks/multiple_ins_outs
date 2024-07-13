@@ -87,9 +87,22 @@ async function processInput(input: any): Promise<void> {
         });
       }
     }
-    // Creating DDL commands
-    await sqlServerListIndexes(databaseTo, input.to.table, input.to.columns);
 
+    // Creating DDL commands
+    let outputString = '';
+    if (databaseTo.type === 'sqlite3') {
+      await sqlServerListIndexes(databaseTo, input.to.table, input.to.columns);
+    } else if (databaseTo.type === 'sqlserver') {
+      // console.warn('Microsoft SQL Server is not supported yet');
+      throw ('Microsoft SQL Server is not supported yet')
+    } else if (databaseTo.type === 'oracle') {
+      // console.warn('Oracle is not supported yet');
+      throw ('Oracle is not supported yet')
+    } else {
+      throw ('Invalid database type');
+      // console.warn('Error: Invalid database type');
+    }
+    // console.log(outputString);
 
     // Read and parse CSV data file
     // const data = [];
@@ -102,7 +115,8 @@ async function processInput(input: any): Promise<void> {
       let commandString = '';
       let headerString = '';
       // console.log(row);
-      if (databaseTo.type === 'sqlserver') {
+      // console.log("databaseTo.type: " + databaseTo.type);
+      if (databaseTo.type === 'sqlite3') {
         // console.log(outputTo);
 
         // Creating subsetting commands
@@ -118,12 +132,15 @@ async function processInput(input: any): Promise<void> {
           // Create CSV for downstream applications
           outputString = sqlServerRead(databaseTo, outputTo, input, row);
         }
-
+      } else if (databaseTo.type === 'sqlserver') {
+        // console.warn('Microsoft SQL Server is not supported yet');
+        throw ('Microsoft SQL Server is not supported yet')
       } else if (databaseTo.type === 'oracle') {
-        outputString = 'Oracle is not supported yet';
+        // console.warn('Oracle is not supported yet');
+        throw ('Oracle is not supported yet')
       } else {
-        outputString = 'Error';
-        throw 'Invalid database type';
+        throw ('Invalid database type');
+        // console.warn('Error: Invalid database type');
       }
 
       // data.push(row);

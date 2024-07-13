@@ -4,7 +4,7 @@
     {
       "name": "dbB",
       "connectionString": "sqlite:sqlite/201_02/dbB.db",
-      "type": "sqlserver",
+      "type": "sqlite3",
       "queue": {
         "connectionString": ".....",
         "topic": "dbB"
