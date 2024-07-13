@@ -3,7 +3,7 @@
 // * Add an additional input mapping to the same table (may do in 301_03 to make it depend on both 101_01 and 201_02)
 // * DONE: Add DDL commands (both pre- and post-)
 // * Add definition for initial app (criteria not from a file) 
-//   -- workaround by manually create a CSV file
+//   -> workaround by manually create a CSV file
 // * Add cyclic dependency scenario (e.g. A -> B -> A)
 // * Convert SQLite3 to MSSQL
 // * Add Oracle support
