@@ -29,8 +29,15 @@ async function sqlServerRead(database: any, output: any, input: any, row: any) {
     queryString += ';';
 
     // console.log(queryString);
-    // console.log(database.connectionString);
-    const sequelize = new Sequelize(database.connectionString, { logging: false }); // Example for an in-memory database
+    // console.log(database.connectionString);   
+    const sequelize = new Sequelize(database.connectionString, {
+      dialect: 'mssql', logging: false, dialectOptions: {
+        options: {
+          encrypt: true, // Required for Azure SQL and recommended for security
+          trustServerCertificate: true // Required to trust a self-signed certificate
+        }
+      }
+    });
     // const sequelize = new Sequelize('sqlite:sqlite/201_01/dbB.db'); // Example for an in-memory database
     const result = await sequelize.query(queryString, {
       type: Sequelize.QueryTypes.SELECT
@@ -68,13 +75,25 @@ function sqlServerDelete(databaseTo: any, input: any, row: any) {
   return outputString;
 }
 
-async function sqlServerListIndexes(database: any, tableName: string, columns: string[]) {
+async function sqlServerListIndexes(database: any, tableName: string) {
   try {
-    console.log('Listing indexes for table:', tableName, "and columns:", columns);
+    console.log('Listing indexes for table:', tableName);
+    let table0 = tableName;
+    let parts = table0.split('.');
+    let tableN = parts.pop();
+    // console.log('tableN:', tableN);
     // console.log('Columns:', columns);
 
-    // Query sqlite_master to get all index names for the specified table
-    const sequelize = new Sequelize(database.connectionString, { logging: false });
+    // Query sqlite_master to get all index names for the specified table    
+    // const sequelize = new Sequelize(database.connectionString, { logging: true });
+    const sequelize = new Sequelize(database.connectionString, {
+      dialect: 'mssql', logging: false, dialectOptions: {
+        options: {
+          encrypt: true, // Required for Azure SQL and recommended for security
+          trustServerCertificate: true // Required to trust a self-signed certificate
+        }
+      }
+    });    
     // const indexes = await sequelize.query(
     //   "SELECT name, sql FROM sqlite_master WHERE type = 'index' AND tbl_name = :tableName AND sql NOT NULL",
     //   {
@@ -82,38 +101,80 @@ async function sqlServerListIndexes(database: any, tableName: string, columns: s
     //     type: sequelize.QueryTypes.SELECT,
     //   }
     // );
+    const query = `
+      SELECT
+        i.name AS IndexName,
+        OBJECT_NAME(ic.OBJECT_ID) AS TableName,
+        COL_NAME(ic.OBJECT_ID, ic.column_id) AS ColumnName,
+        i.is_primary_key AS IsPrimaryKey,
+        i.is_unique AS IsUnique
+      FROM
+        sys.indexes AS i
+      INNER JOIN
+        sys.index_columns AS ic ON i.OBJECT_ID = ic.OBJECT_ID AND i.index_id = ic.index_id
+      WHERE
+        i.is_primary_key = 0 AND OBJECT_NAME(ic.OBJECT_ID) = :tableN
+      ORDER BY
+        i.name, ic.key_ordinal;
+    `;
 
-    const indexes = await sequelize.query(
-      "SELECT name, sql FROM sqlite_master WHERE type = 'index' AND tbl_name = 'cards' AND sql NOT NULL", { type: sequelize.QueryTypes.SELECT, });
+    const indexes = await sequelize.query(query, {
+      replacements: { tableN },
+      type: sequelize.QueryTypes.SELECT,
+    });
+    // console.log("indexes:", indexes);
+
+    // const indexes = await sequelize.query(
+      // "SELECT name, sql FROM sqlite_master WHERE type = 'index' AND tbl_name = 'cards' AND sql NOT NULL", { type: sequelize.QueryTypes.SELECT, });
 
     // Filter out indexes that are automatically created for primary keys
     // This is a basic filter assuming primary key indexes do not contain specific patterns in their SQL definition
     // Adjust the filtering logic based on your database's naming conventions or requirements
-    const nonPrimaryKeyIndexes = indexes.filter((index: any) => !index.sql.includes('PRIMARY KEY'));
+    // const nonPrimaryKeyIndexes = indexes.filter((index: any) => !index.sql.includes('PRIMARY KEY'));
 
     // console.log(nonPrimaryKeyIndexes);
-    for (let index of nonPrimaryKeyIndexes) {
-      // console.log('Non-primary key indexes:"', index.sql, '"');
-      console.log('Appended to file:', database.commandFilePath + "-post")
-      fs.appendFile(database.commandFilePath + "-post", index.sql.replace(/\r\n$/, ';\n'), (err) => {
-        if (err) {
-          console.error('Error appending to file:', err);
 
-        }
-        // console.log('Non-primary key indexes:', nonPrimaryKeyIndexes[0].sql);
-        // return nonPrimaryKeyIndexes;
-      })
+        // Generate POST- SQL statements for each index
+        let postSqlStatements = indexes.map((index: any) => {
+          const uniqueStatement = index.IsUnique ? "UNIQUE" : "";
+          return `CREATE ${uniqueStatement} INDEX [${index.IndexName}] ON [${index.TableName}] ([${index.ColumnName}]);`;
+        }).join('\n');
+    
+        // Save the SQL statements to a file
+        // const filePath = path.join(__dirname, `${tableName}_indexes.sql`);
+        // console.log("Post-",postSqlStatements)
+
+        let preSqlStatements = indexes.map((index: any) => {
+          // const uniqueStatement = index.IsUnique ? "UNIQUE" : "";
+          return `DROP INDEX [${index.IndexName}] ON [${index.TableName}];`;
+
+          // DROP INDEX cards_cus_id_IDX ON [201_02].dbo.cards;
+        }).join('\n');
+    
+        // Save the SQL statements to a file
+        // const filePath = path.join(__dirname, `${tableName}_indexes.sql`);
+        // console.log("Pre-: ",preSqlStatements)        
+        // console.log("-------")
+        // console.log("Post-: ",postSqlStatements)        
+        // fs.writeFileSync(filePath, sqlStatements, 'utf8');
+
 
       console.log('Appended to file:', database.commandFilePath + "-pre")
-      fs.appendFile(database.commandFilePath + "-pre", 'DROP INDEX ' + index.name + ';\n', (err) => {
+      fs.appendFile(database.commandFilePath + "-pre", preSqlStatements, (err) => {
         if (err) {
           console.error('Error appending to file:', err);
 
         }
+      });
+        console.log('Appended to file:', database.commandFilePath + "-post")
+        fs.appendFile(database.commandFilePath + "-post", preSqlStatements, (err) => {
+          if (err) {
+            console.error('Error appending to file:', err);
+  
+          }        
         // console.log('Non-primary key indexes:', nonPrimaryKeyIndexes[0].sql);
         // return nonPrimaryKeyIndexes;
-      })
-    }
+      });    
   } catch (error) {
     console.error('Error listing table indexes:', error);
   }

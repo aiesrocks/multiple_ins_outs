@@ -3,8 +3,9 @@
   "databases": [
     {
       "name": "dbB",
-      "connectionString": "sqlite:sqlite/201_02/dbB.db",
-      "type": "sqlite3",
+      "connectionStringNA": "sqlite:sqlite3/201_02/dbB.db",
+      "connectionString": "mssql://sa:Qwerty123!@localhost:1433/201_02",
+      "type": "sqlserver",
       "queue": {
         "connectionString": ".....",
         "topic": "dbB"

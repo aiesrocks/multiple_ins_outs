@@ -1,1 +1,1 @@
-DROP INDEX cards_cus_id_IDX;
+DROP INDEX [cards_cus_id_IDX] ON [cards];

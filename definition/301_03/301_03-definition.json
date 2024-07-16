@@ -3,8 +3,8 @@
   "databases": [
     {
       "name": "dbC",
-      "connectionString": "sqlite:sqlite/301_03/dbC.db",
-      "type": "sqlserver",
+      "connectionString": "sqlite:sqlite3/301_03/dbC.db",
+      "type": "sqlite3",
       "queue": {
         "connectionString": ".....",
         "topic": "dbC"
@@ -28,7 +28,8 @@
       "table": "dbC.schema.statements",
       "columns": [
         "ccno","period"
-      ]
+      ],
+      "resetFile": false
     }
   ]
 }

@@ -5,7 +5,7 @@
 // * Add definition for initial app (criteria not from a file) 
 //   -> workaround by manually create a CSV file
 // * Add cyclic dependency scenario (e.g. A -> B -> A)
-// * Convert SQLite3 to MSSQL
+// * Done: Add MSSQL support
 // * Add Oracle support
 // * Add MySQL support
 // * Connect to Kafka
@@ -15,6 +15,7 @@ import * as fs from 'fs';
 import csv from 'csv-parser';
 import * as readline from 'readline';
 const load_config = require('./config_loader');
+const { sqlite3Delete, sqlite3Read, sqlite3ListIndexes } = require('./sqlite3');
 const { sqlServerDelete, sqlServerRead, sqlServerListIndexes } = require('./sql_server');
 
 // Get JSON config file paths from command-line arguments
@@ -51,7 +52,7 @@ async function processInput(input: any): Promise<void> {
     // console.log("===============");
     // console.log(outputTo);
     // console.log(databaseTo.connectionString);
-    // sqlServerRead(databaseTo.connectionString);
+    // sqlite3Read(databaseTo.connectionString);
 
     if (resetFiles) {
       let files: string[] = [];
@@ -91,10 +92,11 @@ async function processInput(input: any): Promise<void> {
     // Creating DDL commands
     let outputString = '';
     if (databaseTo.type === 'sqlite3') {
-      await sqlServerListIndexes(databaseTo, input.to.table, input.to.columns);
+      await sqlite3ListIndexes(databaseTo, input.to.table);
     } else if (databaseTo.type === 'sqlserver') {
+      await sqlServerListIndexes(databaseTo, input.to.table);
       // console.warn('Microsoft SQL Server is not supported yet');
-      throw ('Microsoft SQL Server is not supported yet')
+      // throw ('Microsoft SQL Server is not supported yet')
     } else if (databaseTo.type === 'oracle') {
       // console.warn('Oracle is not supported yet');
       throw ('Oracle is not supported yet')
@@ -120,6 +122,19 @@ async function processInput(input: any): Promise<void> {
         // console.log(outputTo);
 
         // Creating subsetting commands
+        commandString = sqlite3Delete(databaseTo, input, row);
+        console.log("Appending to file: " + databaseTo.commandFilePath);
+        fs.appendFile(databaseTo.commandFilePath, commandString + '\n', (err) => {
+          if (err) {
+            console.error('Error appending to file:', err);
+          }
+        });
+
+        if (needOutput) {
+          // Create CSV for downstream applications
+          outputString = sqlite3Read(databaseTo, outputTo, input, row);
+        }
+      } else if (databaseTo.type === 'sqlserver') {
         commandString = sqlServerDelete(databaseTo, input, row);
         console.log("Appending to file: " + databaseTo.commandFilePath);
         fs.appendFile(databaseTo.commandFilePath, commandString + '\n', (err) => {
@@ -132,9 +147,8 @@ async function processInput(input: any): Promise<void> {
           // Create CSV for downstream applications
           outputString = sqlServerRead(databaseTo, outputTo, input, row);
         }
-      } else if (databaseTo.type === 'sqlserver') {
         // console.warn('Microsoft SQL Server is not supported yet');
-        throw ('Microsoft SQL Server is not supported yet')
+        // throw ('Microsoft SQL Server is not supported yet')
       } else if (databaseTo.type === 'oracle') {
         // console.warn('Oracle is not supported yet');
         throw ('Oracle is not supported yet')

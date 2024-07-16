@@ -3,7 +3,7 @@
   "databases": [
     {
       "name": "dbB",
-      "connectionString": "sqlite:sqlite/201_02/dbB.db",
+      "connectionString": "sqlite:sqlite3/201_02/dbB.db",
       "type": "sqlserver",
       "queue": {
         "connectionString": ".....",
