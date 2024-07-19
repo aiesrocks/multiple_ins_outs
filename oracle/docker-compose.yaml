@@ -1,0 +1,18 @@
+# Requires authN from Oracle (docker login container-registry-tokyo.oracle.com)
+name: oracle-poc
+services:
+  db:
+    image: container-registry-tokyo.oracle.com/database/enterprise:19.3.0.0
+    platform: linux/amd64
+    environment:
+      ORACLE_SID: 'XTEDB'
+      ORACLE_PDB: 'XTEPDB1'
+      ORACLE_PWD: 'Qwerty123'
+      INIT_SGA_SIZE: '6656'
+      INIT_PGA_SIZE: '1536'
+      ORACLE_EDITION: 'enterprise'
+      ORACLE_CHARACTERSET: 'AL32UTF8'
+      ENABLE_ARCHIVELOG: 'true'
+    ports:
+      - "1621:1521"
+      - "5600:5500"

@@ -6,7 +6,7 @@
 //   -> workaround by manually create a CSV file
 // * Add cyclic dependency scenario (e.g. A -> B -> A)
 // * Done: Add MSSQL support
-// * Add Oracle support
+// * TBC: Add Oracle support
 // * Add MySQL support
 // * Connect to Kafka
 
@@ -17,6 +17,7 @@ import * as readline from 'readline';
 const load_config = require('./config_loader');
 const { sqlite3Delete, sqlite3Read, sqlite3ListIndexes } = require('./sqlite3');
 const { sqlServerDelete, sqlServerRead, sqlServerListIndexes } = require('./sql_server');
+const { oracleDelete, oracleRead, oracleListIndexes } = require('./oracle');
 
 // Get JSON config file paths from command-line arguments
 const definitionPath = process.argv[2];
@@ -45,6 +46,7 @@ async function processInput(input: any): Promise<void> {
     if (outputTo === undefined) {
       needOutput = false;
     }
+    // console.log(())
 
     if (outputTo !== undefined && outputTo.resetFile !== undefined) {
       resetFiles = outputTo.resetFile;
@@ -98,8 +100,9 @@ async function processInput(input: any): Promise<void> {
       // console.warn('Microsoft SQL Server is not supported yet');
       // throw ('Microsoft SQL Server is not supported yet')
     } else if (databaseTo.type === 'oracle') {
+      await oracleListIndexes(databaseTo, input.to.table);      
       // console.warn('Oracle is not supported yet');
-      throw ('Oracle is not supported yet')
+      // throw ('Oracle is not supported yet')
     } else {
       throw ('Invalid database type');
       // console.warn('Error: Invalid database type');
@@ -150,8 +153,20 @@ async function processInput(input: any): Promise<void> {
         // console.warn('Microsoft SQL Server is not supported yet');
         // throw ('Microsoft SQL Server is not supported yet')
       } else if (databaseTo.type === 'oracle') {
+        commandString = oracleDelete(databaseTo, input, row);
+        console.log("Appending to file: " + databaseTo.commandFilePath);
+        fs.appendFile(databaseTo.commandFilePath, commandString + '\n', (err) => {
+          if (err) {
+            console.error('Error appending to file:', err);
+          }
+        });
+
+        if (needOutput) {
+          // Create CSV for downstream applications
+          outputString = oracleRead(databaseTo, outputTo, input, row);
+        }        
         // console.warn('Oracle is not supported yet');
-        throw ('Oracle is not supported yet')
+        // throw ('Oracle is not supported yet')
       } else {
         throw ('Invalid database type');
         // console.warn('Error: Invalid database type');

@@ -11,12 +11,14 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/oracledb": "^6.5.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.3"
   },
   "dependencies": {
     "csv-parser": "^3.0.0",
     "mysql": "^2.18.1",
+    "oracledb": "^6.5.1",
     "sequelize": "^6.37.3",
     "sqlite3": "^5.1.7",
     "tedious": "^18.2.4",

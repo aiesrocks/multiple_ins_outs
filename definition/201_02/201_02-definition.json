@@ -4,8 +4,11 @@
     {
       "name": "dbB",
       "connectionStringNA": "sqlite:sqlite3/201_02/dbB.db",
-      "connectionString": "mssql://sa:Qwerty123!@localhost:1433/201_02",
-      "type": "sqlserver",
+      "connectionStringNA2": "mssql://sa:Qwerty123!@localhost:1433/201_02",
+      "connectionString": "localhost:1621/XTEPDB1",
+      "oracleUser": "system",
+      "oraclePassword": "Qwerty123",
+      "type": "oracle",
       "queue": {
         "connectionString": ".....",
         "topic": "dbB"
@@ -21,7 +24,7 @@
         ]
       },
       "to": {
-        "table": "dbB.schema.cards",
+        "table": "dbB.201_02.cards",
         "columns": [
           "cus_id"
         ]
@@ -35,7 +38,7 @@
         ]
       },
       "to": {
-        "table": "dbB.schema.billing_address",
+        "table": "dbB.201_02.billing_address",
         "columns": [
           "cus_id"
         ]
@@ -44,7 +47,7 @@
   ],
   "outputs": [
     {
-      "table": "dbB.schema.cards",
+      "table": "dbB.201_02.cards",
       "columns": [
         "card_no"
       ],
